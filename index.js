@@ -1,10 +1,10 @@
 // 'use strict';
 
 var util = require('util'),
-    EventEmitter = require('events'),
-    Concentrate = require('concentrate'),
-    DChunks = require('dissolve-chunks'),
-    ru = DChunks().Rule();
+const util = require('util'),
+      EventEmitter = require('events'),
+      Concentrate = require('concentrate'),
+      DChunks = require('dissolve-chunks'),
 
 var cmdType = {
     "POLL": 0,
