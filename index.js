@@ -105,19 +105,12 @@ function Unpi(config) {
         result.csum = checksum(preBuf, result.payload);
 
         self.emit('data', result);
-        if (result.csum !== result.fcs)
-            self.emit('error', new Error('Invalid checksum.'), result);
     });
 
     if (this.config.phy) {
         this.config.phy.pipe(this.parser);
         this.concentrate.pipe(this.config.phy);
     }
-
-    this.on('error', function (e) {
-        // [DEBUG]
-        // console.log(e);
-    });
 }
 
 util.inherits(Unpi, EventEmitter);
