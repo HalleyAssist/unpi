@@ -17,41 +17,6 @@ var cmdType = {
     "RES3": 7
 };
 
-var subSys = {
-    "RPC_SYS_RES0": 0,
-    "RPC_SYS_SYS": 1,
-    "RPC_SYS_MAC": 2,
-    "RPC_SYS_NWK": 3,
-    "RPC_SYS_AF": 4,
-    "RPC_SYS_ZDO": 5,
-    "RPC_SYS_SAPI": 6,
-    "RPC_SYS_UTIL": 7,
-    "RPC_SYS_DBG": 8,
-    "RPC_SYS_APP": 9,
-    "RPC_SYS_RCAF": 10,
-    "RPC_SYS_RCN": 11,
-    "RPC_SYS_RCN_CLIENT": 12,
-    "RPC_SYS_BOOT": 13,
-    "RPC_SYS_ZIPTEST": 14,
-    "RPC_SYS_DEBUG": 15,
-    "RPC_SYS_PERIPHERALS": 16,
-    "RPC_SYS_NFC": 17,
-    "RPC_SYS_PB_NWK_MGR": 18,
-    "RPC_SYS_PB_GW": 19,
-    "RPC_SYS_PB_OTA_MGR": 20,
-    "RPC_SYS_BLE_SPNP": 21,
-    "RPC_SYS_BLE_HCI": 22,
-    "RPC_SYS_RESV01": 23,
-    "RPC_SYS_RESV02": 24,
-    "RPC_SYS_RESV03": 25,
-    "RPC_SYS_RESV04": 26,
-    "RPC_SYS_RESV05": 27,
-    "RPC_SYS_RESV06": 28,
-    "RPC_SYS_RESV07": 29,
-    "RPC_SYS_RESV08": 30,
-    "RPC_SYS_SRV_CTR": 31
-};
-
 // polyfill for ES5
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function(searchString, position){
@@ -105,8 +70,9 @@ function Unpi(config) {
         result.csum = checksum(preBuf, result.payload);
 
         self.emit('data', result);
-        if (result.csum !== result.fcs)
+        if (result.csum !== result.fcs){
             self.emit('error', new Error('Invalid checksum.'), result);
+        }
     });
 
     if (this.config.phy) {
@@ -131,8 +97,8 @@ Unpi.prototype.send = function (type, subsys, cmdId, payload) {
     else if (typeof type === 'number' && isNaN(type))
         throw new TypeError('Argument type cannot be NaN.');
 
-    if (typeof subsys !== 'string' && typeof subsys !== 'number')
-        throw new TypeError('Argument subsys should be a string or a number.');
+    if (typeof subsys !== 'number')
+        throw new TypeError('Argument subsys should be a number.');
     else if (typeof subsys === 'number' && isNaN(subsys))
         throw new TypeError('Argument subsys cannot be NaN.');
 
@@ -143,13 +109,11 @@ Unpi.prototype.send = function (type, subsys, cmdId, payload) {
         throw new TypeError('Payload should be a buffer.');
 
     type = getCmdTypeString(type);
-    subsys = getSubsysString(subsys);
 
     if (type === undefined || subsys === undefined)
         throw new Error('Invalid command type or subsystem.');
 
     type = cmdType[type];
-    subsys = subSys[subsys];
     payload = payload || new Buffer(0);
 
     var packet,
@@ -261,27 +225,6 @@ function getCmdTypeString(cmdtype) {
             cmdTypeString = cmdtype;
     }
     return cmdTypeString;
-}
-
-function getSubsysString(subsys) {
-    var subsysString;
-
-    if (typeof subsys === 'number') {
-        for (var k in subSys) {
-            if (subSys.hasOwnProperty(k) && subSys[k] === subsys) {
-                cmdString = k;
-                break;
-            }
-        }
-    } else if (typeof subsys === 'string') {
-        if (!subsys.startsWith('RPC_SYS_'))
-            subsys = 'RPC_SYS_' + subsys;
-
-        if (subSys.hasOwnProperty(subsys))
-            subsysString = subsys;
-    }
-
-    return subsysString;
 }
 
 module.exports = Unpi;
