@@ -1,12 +1,12 @@
 // 'use strict';
 
-var util = require('util'),
-    EventEmitter = require('events'),
-    Concentrate = require('concentrate'),
-    DChunks = require('dissolve-chunks'),
-    ru = DChunks().Rule();
+const util = require('util'),
+      EventEmitter = require('events'),
+      Concentrate = require('concentrate'),
+      DChunks = require('dissolve-chunks'),
+      ru = DChunks().Rule();
 
-var cmdType = {
+const cmdType = {
     "POLL": 0,
     "SREQ": 1,
     "AREQ": 2,
@@ -17,22 +17,11 @@ var cmdType = {
     "RES3": 7
 };
 
-// polyfill for ES5
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position){
-      position = position || 0;
-      return this.substr(position, searchString.length) === searchString;
-  };
-}
-
 /*************************************************************************************************/
 /*** TI Unified NPI Packet Format                                                              ***/
 /***     SOF(1) + Length(2/1) + Type/Sub(1) + Cmd(1) + Payload(N) + FCS(1)                     ***/
 /*************************************************************************************************/
 function Unpi(config) {
-    var pRules,
-        self = this;
-
     if (config !== undefined && (typeof config !== 'object' || Array.isArray(config)))
         throw new TypeError('config should be an object if given.');
 
@@ -41,7 +30,7 @@ function Unpi(config) {
     this.config = config || {};
     this.config.lenBytes = this.config.lenBytes || 2;
 
-    pRules = [
+    const pRules = [
         ru._unpiHeader('sof'),
         ru._unpiLength('len', this.config.lenBytes),
         ru._unpiCmd0('type', 'subsys'),
@@ -53,12 +42,11 @@ function Unpi(config) {
     this.concentrate = Concentrate();
     this.parser = DChunks().join(pRules).compile();
 
-    this.parser.on('parsed', function (result) {
-        var cmd0 = (result.type << 5) | result.subsys,
-            preBufLen = self.config.lenBytes + 2,
-            preBuf = new Buffer(preBufLen);
+    this.parser.on('parsed', result => {
+        const cmd0 = (result.type << 5) | result.subsys,
+              preBuf = new Buffer(this.config.lenBytes + 2);
 
-        if (self.config.lenBytes === 1) {
+        if (this.config.lenBytes === 1) {
             preBuf.writeUInt8(result.len, 0);
             preBuf.writeUInt8(cmd0, 1);
             preBuf.writeUInt8(result.cmd, 2);
@@ -69,21 +57,13 @@ function Unpi(config) {
         }
         result.csum = checksum(preBuf, result.payload);
 
-        self.emit('data', result);
-        if (result.csum !== result.fcs){
-            self.emit('error', new Error('Invalid checksum.'), result);
-        }
+        this.emit('data', result);
     });
 
     if (this.config.phy) {
         this.config.phy.pipe(this.parser);
         this.concentrate.pipe(this.config.phy);
     }
-
-    this.on('error', function (e) {
-        // [DEBUG]
-        // console.log(e);
-    });
 }
 
 util.inherits(Unpi, EventEmitter);
@@ -116,31 +96,26 @@ Unpi.prototype.send = function (type, subsys, cmdId, payload) {
     type = cmdType[type];
     payload = payload || new Buffer(0);
 
-    var packet,
-        sof = 0xFE,
-        len = payload.length,
-        cmd0 = ((type << 5) & 0xE0) | (subsys & 0x1F),
-        cmd1 = cmdId,
-        preBuf,
-        fcs;
+    const sof = 0xFE,
+          cmd0 = ((type << 5) & 0xE0) | (subsys & 0x1F)
 
-    preBuf = new Buffer(this.config.lenBytes + 2);
+    const preBuf = new Buffer(this.config.lenBytes + 2);
 
     if (this.config.lenBytes === 1) {
         preBuf.writeUInt8(payload.length, 0);
         preBuf.writeUInt8(cmd0, 1);
-        preBuf.writeUInt8(cmd1, 2);
+        preBuf.writeUInt8(cmdId, 2);
     } else if (this.config.lenBytes === 2) {
         preBuf.writeUInt16LE(payload.length, 0);
         preBuf.writeUInt8(cmd0, 2);
-        preBuf.writeUInt8(cmd1, 3);
+        preBuf.writeUInt8(cmdId, 3);
     }
 
-    fcs = checksum(preBuf, payload);
-    packet = Concentrate().uint8(sof).buffer(preBuf).buffer(payload).uint8(fcs).result();
+    const fcs = checksum(preBuf, payload);
+    const packet = Concentrate().uint8(sof).buffer(preBuf).buffer(payload).uint8(fcs).result();
     
     this.concentrate.buffer(packet).flush();
-    this.emit('flushed', { type: type , subsys: subsys, cmdId: cmdId });
+    this.emit('flushed', { type , subsys, cmdId });
 
     return packet;
 };
@@ -214,7 +189,7 @@ function getCmdTypeString(cmdtype) {
     var cmdTypeString;
 
     if (typeof cmdtype === 'number') {
-        for (var k in cmdType) {
+        for (const k in cmdType) {
             if (cmdType.hasOwnProperty(k) && cmdType[k] === cmdtype) {
                 cmdTypeString = k;
                 break;
