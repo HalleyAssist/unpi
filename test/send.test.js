@@ -13,13 +13,13 @@ describe('Arguments Testing', function() {
 
         describe('#Argument Type', function() {
             it('should throw if type is not a string or a number', function () {
-                expect(function () { return unpi.send(undefined, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send(null, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send([], 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send({}, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send(NaN, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send(true, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send(function () {}, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send(undefined, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send(null, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send([], 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send({}, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send(NaN, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send(true, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send(function () {}, 1, 0, new Buffer([ 0 ])); }).to.throw(TypeError);
             });
 
             it('should throw if type is not a string or a number', function () {
@@ -33,48 +33,43 @@ describe('Arguments Testing', function() {
             });
 
             it('should throw if cmdId is not a number', function () {
-                expect(function () { return unpi.send('AREQ', 'SYS', '0', new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', undefined, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', null, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', NaN, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', [], new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', {}, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', true, new Buffer([ 0 ])); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', function () {}, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, '0', new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, undefined, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, null, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, NaN, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, [], new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, {}, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, true, new Buffer([ 0 ])); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, function () {}, new Buffer([ 0 ])); }).to.throw(TypeError);
             });
 
             it('should throw if payload is given but not a buffer', function () {
-                expect(function () { return unpi.send('AREQ', 'SYS', 6, function () {}); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, 0); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, '0'); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, null); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, NaN); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, []); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, {}); }).to.throw(TypeError);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, true); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 6, function () {}); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, 0); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, '0'); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, null); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, NaN); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, []); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, {}); }).to.throw(TypeError);
+                expect(function () { return unpi.send('AREQ', 1, 0, true); }).to.throw(TypeError);
             });
         });
 
         describe('#Invalid argument - undefined', function() {
             it('should throw if bad cmdType', function () {
-                expect(function () { return unpi.send('AREQx', 'SYS', 0, new Buffer([ 0 ])); }).to.throw(Error);
-                expect(function () { return unpi.send(100, 'SYS', 0, new Buffer([ 0 ])); }).to.throw(Error);
-            });
-
-            it('should throw if bad subsys', function () {
-                expect(function () { return unpi.send('AREQ', 'SYSX', 0, new Buffer([ 0 ])); }).to.throw(Error);
-                expect(function () { return unpi.send('AREQ', 100, 0, new Buffer([ 0 ])); }).to.throw(Error);
+                expect(function () { return unpi.send('AREQx', 1, 0, new Buffer([ 0 ])); }).to.throw(Error);
+                expect(function () { return unpi.send(100, 1, 0, new Buffer([ 0 ])); }).to.throw(Error);
             });
         });
 
         describe('#Valid argument', function() {
             it('should not throw if everthing is ok', function () {
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, new Buffer([ 0 ])); }).not.to.throw(Error);
-                expect(function () { return unpi.send('SRSP', 'SYS', 0, new Buffer([ 0 ])); }).not.to.throw(Error);
-                expect(function () { return unpi.send('AREQ', 'UTIL', 0, new Buffer([ 0, 1, 2, 3, 4 ])); }).not.to.throw(Error);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, new Buffer([ 1, 2, 3, 0 ])); }).not.to.throw(Error);
-                expect(function () { return unpi.send('AREQ', 'NWK', 0, new Buffer([ 0 ])); }).not.to.throw(Error);
-                expect(function () { return unpi.send('AREQ', 'SYS', 0, new Buffer([ 10, 20, 30 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('AREQ', 1, 0, new Buffer([ 0 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('SRSP', 1, 0, new Buffer([ 0 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('AREQ', 1, 0, new Buffer([ 0, 1, 2, 3, 4 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('AREQ', 1, 0, new Buffer([ 1, 2, 3, 0 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('AREQ', 1, 0, new Buffer([ 0 ])); }).not.to.throw(Error);
+                expect(function () { return unpi.send('AREQ', 1, 0, new Buffer([ 10, 20, 30 ])); }).not.to.throw(Error);
             });
         });
 
@@ -112,15 +107,15 @@ describe('Functional Testing', function() {
     describe('#.send', function() {
         describe('#.compiled buffer', function() {
             it('should equal to a buffer as expected sapiStartReqBuf', function () {
-                expect(unpi.send('SREQ', 'SAPI', 0, new Buffer(0))).to.deep.equal(sapiStartReqBuf);
+                expect(unpi.send('SREQ', 6, 0, new Buffer(0))).to.deep.equal(sapiStartReqBuf);
             });
 
             it('should equal to a buffer as expected sapiStartReqBuf + payload', function () {
-                expect(unpi.send('SREQ', 'SAPI', 0, new Buffer([ 0, 1, 2 ]))).to.deep.equal(new Buffer([ 0xfe, 0x03, 0x26, 0x00, 0x00, 0x01, 0x02, 0x26 ]));
+                expect(unpi.send('SREQ', 6, 0, new Buffer([ 0, 1, 2 ]))).to.deep.equal(new Buffer([ 0xfe, 0x03, 0x26, 0x00, 0x00, 0x01, 0x02, 0x26 ]));
             });
 
             it('should equal to a buffer as expected sapiStartRspBuf', function () {
-                expect(unpi.send('SRSP', 'SAPI', 0, new Buffer(0))).to.deep.equal(sapiStartRspBuf);
+                expect(unpi.send('SRSP', 6, 0, new Buffer(0))).to.deep.equal(sapiStartRspBuf);
             });
         });
     });
