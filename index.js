@@ -41,9 +41,27 @@ function Unpi(config) {
 
     this.concentrate = Concentrate();
     this.parser = (new DChunks()).join(pRules).compile();
+    const stream = this.parser.stream()
+    stream.on('parsed', result => {
+        const cmd0 = (result.type << 5) | result.subsys,
+              preBuf = new Buffer(this.config.lenBytes + 2);
+
+        if (this.config.lenBytes === 1) {
+            preBuf.writeUInt8(result.len, 0);
+            preBuf.writeUInt8(cmd0, 1);
+            preBuf.writeUInt8(result.cmd, 2);
+        } else {
+            preBuf.writeUInt16LE(result.len, 0);
+            preBuf.writeUInt8(cmd0, 2);
+            preBuf.writeUInt8(result.cmd, 3);
+        }
+        result.csum = checksum(preBuf, result.payload);
+
+        this.emit('data', result);
+    });
 
     if (this.config.phy) {
-        this.config.phy.pipe(this.parser);
+        this.config.phy.pipe(stream);
         this.concentrate.pipe(this.config.phy);
     }
 }
@@ -59,7 +77,7 @@ Unpi.prototype.send = function (type, subsys, cmdId, payload) {
     else if (typeof type === 'number' && isNaN(type))
         throw new TypeError('Argument type cannot be NaN.');
 
-    if (typeof subsys !== 'number') 
+    if (typeof subsys !== 'number')
         throw new TypeError('Argument subsys should be a number.');
     else if (typeof subsys === 'number' && isNaN(subsys))
         throw new TypeError('Argument subsys cannot be NaN.');
@@ -109,23 +127,7 @@ Unpi.prototype.receive = function (buf) {
     if (!Buffer.isBuffer(buf))
         throw new TypeError('buf should be a Buffer.');
 
-    for (const result of this.parser.process(buf)){
-        const cmd0 = (result.type << 5) | result.subsys,
-        preBuf = new Buffer(this.config.lenBytes + 2);
-
-        if (this.config.lenBytes === 1) {
-            preBuf.writeUInt8(result.len, 0);
-            preBuf.writeUInt8(cmd0, 1);
-            preBuf.writeUInt8(result.cmd, 2);
-        } else {
-            preBuf.writeUInt16LE(result.len, 0);
-            preBuf.writeUInt8(cmd0, 2);
-            preBuf.writeUInt8(result.cmd, 3);
-        }
-        result.csum = checksum(preBuf, result.payload);
-
-        this.emit('data', result);
-    }
+    this.parser.write(buf);
     return this;
 };
 
