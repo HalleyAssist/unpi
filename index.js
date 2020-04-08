@@ -4,6 +4,7 @@ const util = require('util'),
       EventEmitter = require('events'),
       Concentrate = require('concentrate'),
       DChunks = require('dissolve-chunks'),
+      Q = require('q'),
       ru = DChunks.Rule;
 
 const cmdType = {
@@ -71,7 +72,7 @@ util.inherits(Unpi, EventEmitter);
 Unpi.DChunks = DChunks;
 Unpi.Concentrate = Concentrate;
 
-Unpi.prototype.send = function (type, subsys, cmdId, payload) {
+Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     if (typeof type !== 'string' && typeof type !== 'number') 
         throw new TypeError('Argument type should be a string or a number.');
     else if (typeof type === 'number' && isNaN(type))
@@ -115,6 +116,14 @@ Unpi.prototype.send = function (type, subsys, cmdId, payload) {
     const packet = Concentrate().uint8(sof).buffer(preBuf).buffer(payload).uint8(fcs).result();
     
     this.concentrate.buffer(packet).flush();
+
+    const deferred = Q.defer()
+    this.config.phy.drain(err=>{
+        if(err) deferred.reject(err)
+        deferred.resolve()
+    })
+    await deferred.promise
+
     this.emit('flushed', { type , subsys, cmdId });
 
     return packet;
