@@ -6,7 +6,7 @@
   "dependencies": {
     "concentrate": "^0.2.3",
     "dissolve-chunks": "git+https://github.com/HalleyAssist/dissolve-chunks.git",
-	"q": "git+https://github.com/HalleyAssist/q-lite.git"
+	  "q-lite": "git+https://github.com/HalleyAssist/q-lite.git"
   },
   "devDependencies": {
     "chai": "^3.5.0",

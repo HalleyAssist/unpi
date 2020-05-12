@@ -4,7 +4,7 @@ const util = require('util'),
       EventEmitter = require('events'),
       Concentrate = require('concentrate'),
       DChunks = require('dissolve-chunks'),
-      Q = require('q'),
+      Q = require('q-lite'),
       ru = DChunks.Rule;
 
 const cmdType = {
