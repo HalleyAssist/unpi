@@ -112,16 +112,16 @@ describe('Functional Testing', function() {
 
     describe('#.send', function() {
         describe('#.compiled buffer', function() {
-            it('should equal to a buffer as expected sapiStartReqBuf', function () {
-                expect(unpi.send('SREQ', 6, 0, new Buffer(0))).to.deep.equal(sapiStartReqBuf);
+            it('should equal to a buffer as expected sapiStartReqBuf', async () => {
+                expect(await unpi.send('SREQ', 6, 0, new Buffer(0))).to.deep.equal(sapiStartReqBuf);
             });
 
-            it('should equal to a buffer as expected sapiStartReqBuf + payload', function () {
-                expect(unpi.send('SREQ', 6, 0, new Buffer([ 0, 1, 2 ]))).to.deep.equal(new Buffer([ 0xfe, 0x03, 0x26, 0x00, 0x00, 0x01, 0x02, 0x26 ]));
+            it('should equal to a buffer as expected sapiStartReqBuf + payload', async () => {
+                expect(await unpi.send('SREQ', 6, 0, new Buffer([ 0, 1, 2 ]))).to.deep.equal(new Buffer([ 0xfe, 0x03, 0x26, 0x00, 0x00, 0x01, 0x02, 0x26 ]));
             });
 
-            it('should equal to a buffer as expected sapiStartRspBuf', function () {
-                expect(unpi.send('SRSP', 6, 0, new Buffer(0))).to.deep.equal(sapiStartRspBuf);
+            it('should equal to a buffer as expected sapiStartRspBuf', async () => {
+                expect(await unpi.send('SRSP', 6, 0, new Buffer(0))).to.deep.equal(sapiStartRspBuf);
             });
         });
     });

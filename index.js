@@ -5,6 +5,7 @@ const util = require('util'),
       Concentrate = require('concentrate'),
       DChunks = require('dissolve-chunks'),
       Q = require('q-lite'),
+      assert = require('assert'),
       ru = DChunks.Rule;
 
 const cmdType = {
@@ -42,6 +43,7 @@ function Unpi(config) {
 
     this.concentrate = Concentrate();
     this.parser = (new DChunks()).join(pRules).compile();
+    assert(this.parser)
     const stream = this.parser.stream()
     stream.on('parsed', result => {
         const cmd0 = (result.type << 5) | result.subsys,
@@ -60,12 +62,15 @@ function Unpi(config) {
 
         this.emit('data', result);
     });
+    this.stream = stream
 
     if (this.config.phy) {
         this.config.phy.pipe(stream);
         this.concentrate.pipe(this.config.phy);
     }
 }
+
+const EmptyBuffer = Buffer.alloc(0)
 
 util.inherits(Unpi, EventEmitter);
 
@@ -117,12 +122,14 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     
     this.concentrate.buffer(packet).flush();
 
-    const deferred = Q.defer()
-    this.config.phy.drain(err=>{
-        if(err) deferred.reject(err)
-        deferred.resolve()
-    })
-    await deferred.promise
+    if (this.config.phy) {
+        const deferred = Q.defer()
+        this.config.phy.drain(err=>{
+            if(err) deferred.reject(err)
+            deferred.resolve()
+        })
+        await deferred.promise
+    }
 
     this.emit('flushed', { type , subsys, cmdId });
 
@@ -131,12 +138,13 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
 
 Unpi.prototype.receive = function (buf) {
     if (buf === undefined || buf === null)
-        buf = new Buffer(0);
+        buf = EmptyBuffer;
 
     if (!Buffer.isBuffer(buf))
         throw new TypeError('buf should be a Buffer.');
 
-    this.parser.write(buf);
+    this.stream.write(buf)
+
     return this;
 };
 
