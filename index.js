@@ -45,7 +45,7 @@ function Unpi(config) {
     this.parser = (new DChunks()).join(pRules).compile();
     assert(this.parser)
     const stream = this.parser.stream()
-    stream.on('parsed', result => {
+    this._parsed = result => {
         const cmd0 = (result.type << 5) | result.subsys,
               preBuf = new Buffer(this.config.lenBytes + 2);
 
@@ -61,7 +61,8 @@ function Unpi(config) {
         result.csum = checksum(preBuf, result.payload);
 
         this.emit('data', result);
-    });
+    }
+    stream.on('parsed', this._parsed);
     this.stream = stream
 
     if (this.config.phy) {
@@ -147,6 +148,12 @@ Unpi.prototype.receive = function (buf) {
 
     return this;
 };
+
+Unpi.prototype.close = function(){
+    this.stream.removeListener('parsed', this._parsed);
+    this.config.phy.unpipe(this.stream);
+    this.concentrate.unpipe(this.config.phy);
+}
 
 /*************************************************************************************************/
 /*** Parsing Clauses                                                                           ***/
