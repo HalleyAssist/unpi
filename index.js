@@ -60,6 +60,13 @@ function Unpi(config) {
         }
         result.csum = checksum(preBuf, result.payload);
 
+        /*const data = Object.assign({}, result)
+        data.payload = [...data.payload]
+        unpiCapture.push({
+            method: 'receive',
+            data
+        })*/
+
         this.emit('data', result);
     }
     stream.on('parsed', this._parsed);
@@ -77,6 +84,14 @@ util.inherits(Unpi, EventEmitter);
 
 Unpi.DChunks = DChunks;
 Unpi.Concentrate = Concentrate;
+
+/*
+let unpiCapture = []
+setTimeout(function(){
+    const fs = require('fs')
+    fs.writeFileSync("/tmp/dump.json", JSON.stringify(unpiCapture))
+}, 60000)
+*/
 
 Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     if (typeof type !== 'string' && typeof type !== 'number') 
@@ -99,6 +114,15 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
 
     if (type === undefined || subsys === undefined)
         throw new Error('Invalid command type or subsystem.');
+
+    /*
+    unpiCapture.push({
+        method: 'send',
+        data: {
+            type, subsys, cmdId, payload: [...payload]
+        }
+    })
+    */
 
     type = cmdType[type];
     payload = payload || new Buffer(0);
