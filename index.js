@@ -41,13 +41,12 @@ function Unpi(config) {
         ru.uint8('fcs')
     ];
 
-    this.concentrate = Concentrate();
     this.parser = (new DChunks()).join(pRules).compile();
     assert(this.parser)
     const stream = this.parser.stream()
     this._parsed = result => {
         const cmd0 = (result.type << 5) | result.subsys,
-              preBuf = new Buffer(this.config.lenBytes + 2);
+              preBuf = Buffer.alloc(this.config.lenBytes + 2);
 
         if (this.config.lenBytes === 1) {
             preBuf.writeUInt8(result.len, 0);
@@ -74,7 +73,6 @@ function Unpi(config) {
 
     if (this.config.phy) {
         this.config.phy.pipe(stream);
-        this.concentrate.pipe(this.config.phy);
     }
 }
 
@@ -125,12 +123,12 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     */
 
     type = cmdType[type];
-    payload = payload || new Buffer(0);
+    payload = payload || Buffer.alloc(0);
 
     const sof = 0xFE,
           cmd0 = ((type << 5) & 0xE0) | (subsys & 0x1F)
 
-    const preBuf = new Buffer(this.config.lenBytes + 2);
+    const preBuf = Buffer.alloc(this.config.lenBytes + 2);
 
     if (this.config.lenBytes === 1) {
         preBuf.writeUInt8(payload.length, 0);
@@ -145,15 +143,23 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     const fcs = checksum(preBuf, payload);
     const packet = Concentrate().uint8(sof).buffer(preBuf).buffer(payload).uint8(fcs).result();
     
-    this.concentrate.buffer(packet).flush();
-
-    if (this.config.phy) {
-        const deferred = Q.defer()
-        this.config.phy.drain(err=>{
-            if(err) deferred.reject(err)
-            deferred.resolve()
-        })
-        await deferred.promise
+    let error, eFn
+    if(this.config.phy){
+        eFn = e=>error = e
+        this.config.phy.on('error', eFn)
+        try {
+            const deferred = Q.defer()
+            this.config.phy.write(packet, null, err=>{
+                if(err) deferred.reject(err)
+                deferred.resolve()
+            })
+            await deferred.promise
+        } finally {
+            this.config.phy.removeListener('error', eFn)
+            if(error){
+                throw error
+            }
+        }
     }
 
     this.emit('flushed', { type , subsys, cmdId });
@@ -176,7 +182,6 @@ Unpi.prototype.receive = function (buf) {
 Unpi.prototype.close = function(){
     this.stream.removeListener('parsed', this._parsed);
     this.config.phy.unpipe(this.stream);
-    this.concentrate.unpipe(this.config.phy);
 }
 
 /*************************************************************************************************/
