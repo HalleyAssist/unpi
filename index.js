@@ -146,9 +146,10 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     let error, eFn
     if(this.config.phy){        
         const deferred = Q.defer()
+        const deferred2 = Q.defer()
         eFn = e=>{
             deferred.reject(e)
-            error = e
+            deferred2.reject(e)
         }
         this.config.phy.on('error', eFn)
         try {
@@ -158,7 +159,6 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
             })
             await (deferred.promise.timeout(1150))
             if(!writeResult){
-                const deferred2 = Q.defer()
                 this.config.phy.drain(err=>{
                     if(err) deferred2.reject(err)
                     deferred2.resolve()
@@ -167,9 +167,6 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
             }
         } finally {
             this.config.phy.removeListener('error', eFn)
-            if(error){
-                throw error
-            }
         }
     }
 
