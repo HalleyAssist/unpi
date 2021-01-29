@@ -144,21 +144,21 @@ Unpi.prototype.send = async function (type, subsys, cmdId, payload) {
     const packet = Concentrate().uint8(sof).buffer(preBuf).buffer(payload).uint8(fcs).result();
     
     let error, eFn
-    if(this.config.phy){
-        const deferred2 = Q.defer()
+    if(this.config.phy){        
+        const deferred = Q.defer()
         eFn = e=>{
             deferred.reject(e)
             error = e
         }
         this.config.phy.on('error', eFn)
         try {
-            const deferred = Q.defer()
             const writeResult = this.config.phy.write(packet, null, err=>{
                 if(err) deferred.reject(err)
                 deferred.resolve()
             })
             await (deferred.promise.timeout(1150))
             if(!writeResult){
+                const deferred2 = Q.defer()
                 this.config.phy.drain(err=>{
                     if(err) deferred2.reject(err)
                     deferred2.resolve()
